@@ -1,0 +1,44 @@
+WIFI_SSID = "YOUR-WIFI-SSID"    # use CIRCUITPY_WIFI_SSID for enabled CPY web workflow
+WIFI_PSK = "YOUR-WIFI-PASSWORD" # use CIRCUITPY_WIFI_PSK  for enabled CPY web workflow
+
+[SYSTEM]
+# NTP = on
+# NTP_TZ_OFFSET = -6
+# TODO: enable web workflow in boot.py if reset reason ...
+DEBUG = 0           # activate to wait on startup for console connection
+
+[ESCPOS]
+SERVICES = [ "MQTT", "TCP" ]    # services that should be started
+PRINTERS = [ "black", "white" ] # printers that should be connected
+
+[SERVICE:HTTP]
+PRINTERS = [ "black" ]
+PORT = 8080
+PATH = /escpos
+METHOD = POST                      # POST | PUT
+AUTH = "ipv4"                      # "none" (default) | "basic" | "ipv4"
+AUTH_BASIC_USERNAME = username     # only required if AUTH is "basic"
+AUTH_BASIC_PASSWORD = password     # only required if AUTH is "basic"
+AUTH_IPV4_LIST = [ "192.168.1.1" ] # only required if AUTH is "ipv4"
+
+[SERVICE:MQTT]
+PRINTERS = [ "black", "white" ]
+BROKER_IPV4 = "YOUR-MQTT-SERVER"
+BROKER_USER = "YOUR-MQTT-USERNAME"
+BROKER_PASS = "YOUR-MQTT-PASSWORD"
+BROKER_TOPIC = "printer/all-of-my-printers/escpos"
+
+[SERVICE:TCP]
+PRINTERS = [ "white" ]
+PORT = 9100
+AUTH = "ipv4"                      # "none" (default) | "ipv4"
+AUTH_IPV4_LIST = [ "192.168.1.1" ] # only required if AUTH is "ipv4"
+
+[PRINTER:black]
+USB_VID = "04b8" # EPSON
+USB_PID = "0e15" # TM-T20II
+
+[PRINTER:white]
+USB_VID = "04b8" # EPSON
+USB_PID = "0202" # TM-T88IV
+
