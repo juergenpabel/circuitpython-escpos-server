@@ -8,7 +8,7 @@ DEBUG = 1                      # activate to wait on startup for console connect
 
 [ESCPOS]
 SERVICES = [ "TCP" ]           # services that shall be started
-PRINTERS = [ "BLACK", "DEBUG" ]
+PRINTERS = [ "TM-T20II", "DEBUG" ]
 
 
 [SERVICE:HTTP]
@@ -28,12 +28,12 @@ SERVER_PORT = 9100
 CLIENT_TIMEOUT = 3
 
 
-[PRINTER:BLACK]
+[PRINTER:TM-T20II]
 DRIVER = "USB"
 VID = "04b8"        # EPSON
 PID = "0e15"        # TM-T20II
 
-[PRINTER:WHITE]
+[PRINTER:TM-T88IV]
 DRIVER = "USB"
 VID = "04b8"        # EPSON
 PID = "0202"        # TM-T88IV
