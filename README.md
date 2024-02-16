@@ -31,6 +31,4 @@ The PicoW is powered using 24VDC provided by the printer (an Epson TM-T20II) via
 
 - Can't I just use a developemnt build of circuitpython9 for the PicoW? Yes, as of 2024-02-15 that should work, take a look at their [S3 bucket for the PicoW](https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin/raspberry_pi_pico_w/).
   
-- Shouldn't there be an issue or even pull-request for circuitpython? Absolutely, check out [issue #8359](https://github.com/adafruit/circuitpython/issues/8359) (for context and history) and [issue #8922](https://github.com/adafruit/circuitpython/issues/8922) (for the fix).
-
 - Why not provide the libs as MPYs for better performance and reduced memory consumption? Because CircuitPython 9 is still in beta and for the PicoW (my personal setup) it still needs the development builds, which are incompatible with the released MPYs of the other projects.
