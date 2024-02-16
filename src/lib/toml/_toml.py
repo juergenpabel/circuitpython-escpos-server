@@ -116,7 +116,7 @@ class SyntaxChecker:
         quoted = info.open_quote != -1
 
         # there can only be 2 delimiting quotes (open and close), but an arbritrary amount of the other one
-        if quoted and info.line.count(info.line[info.open_quote]) != 2:
+        if quoted and info.line.count(info.line[info.open_quote]) % 2 == 1:
             return "Malformed string, check out your quotes"
 
         #######################

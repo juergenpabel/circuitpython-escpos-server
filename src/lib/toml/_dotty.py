@@ -32,7 +32,7 @@ class Dotty:
         self.tables = set()
 
         # _BASE => items at root of the dict
-        self.tables.add(self._BASE)
+        #self.tables.add(self._BASE)
 
         if fill_tables:
             def _fill(key: str, value: object) -> None:

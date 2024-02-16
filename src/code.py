@@ -1,58 +1,77 @@
-import os
 import time
-import ipaddress
 import board
 import wifi
 import usb.core
 import usb_host
 import supervisor
-import socketpool
-from adafruit_minimqtt.adafruit_minimqtt import MQTT
+import toml
+from printers.debug import PrinterDebug
 
-g_printer = None
+g_runtime = {}
+g_runtime['printer'] = None
+g_runtime['services'] = list()
 
-def on_escpos(client, topic, payload):
-    print(f"Processing MQTT message on topic '{topic}' with a payload of {len(payload)} bytes")
-    g_printer.write(1, b'\x1b\x40')
-    g_printer.write(1, b'\x1b\x64\x04')
-    for offset in range(0, len(payload), 64):
-        g_printer.write(1, payload[offset:offset+64])
-    g_printer.write(1, b'\x1b\x64\x08')
-    g_printer.write(1, b'\x1b\x6d')
+g_config = toml.load('settings.toml')
+g_config.setdefault('SYSTEM', {'DEBUG': False})
+g_config['SYSTEM.DEBUG'] = bool(g_config['SYSTEM.DEBUG'])
+g_config.setdefault('ESCPOS', {})
 
-    
-if os.getenv('DEBUG') is not None and bool(os.getenv('DEBUG')) is True:
+if g_config['SYSTEM.DEBUG'] is True:
+    g_runtime['printer'] = PrinterDebug(g_config['SYSTEM.DEBUG'])
     while supervisor.runtime.serial_connected is False:
         time.sleep(1)
-print(f"Connecting to SSID '{os.getenv('WIFI_SSID')}'...")
-wifi.radio.connect(os.getenv('WIFI_SSID'), os.getenv('WIFI_PSK'))
-print(f"IPv4: {wifi.radio.ipv4_address}")
-time.sleep(1)
-print("\nPicoW USB/ESCPOS driver")
 
-print(f"Connecting to USB printer '{os.getenv('PRINTER_USB_VID', '04b8')}:{os.getenv('PRINTER_USB_PID', '0e15')}'...")
-usb_host.Port(board.GP26, board.GP27)
-while g_printer is None:
-    g_printer = usb.core.find(idVendor=os.getenv('PRINTER_USB_VID', '04b8'), idProduct=os.getenv('PRINTER_USB_PID', '0e15'))
-    time.sleep(1)
-print(f"{g_printer.idVendor:04x}:{g_printer.idProduct:04x} {g_printer.manufacturer} / {g_printer.product} (#{g_printer.serial_number})")
-g_printer.set_configuration()
-
-print(f"Connecting to MQTT broker '{os.getenv('MQTT_BROKER_IPV4', '192.168.1.1')}'...")
-mqtt_client = MQTT(broker=os.getenv('MQTT_BROKER_IPV4', '192.168.1.1'),
-                   username=os.getenv('MQTT_BROKER_USER', None),
-                   password=os.getenv('MQTT_BROKER_PASS', None),
-                   socket_pool=socketpool.SocketPool(wifi.radio),
-                   use_binary_mode=True)
-while mqtt_client.is_connected() is False:
-    mqtt_client.connect()
+if 'WIFI_SSID' in g_config:
+    mac = ':'.join(['{:02X}'.format(i) for i in wifi.radio.mac_address])
+    print(f"Connecting to SSID '{g_config['WIFI_SSID']}' with MAC='{mac}'...")
+    wifi.radio.connect(g_config['WIFI_SSID'], g_config['WIFI_PSK'])
+    print(f"...connected with IPv4={wifi.radio.ipv4_address}")
     time.sleep(1)
 
-mqtt_client.on_message = on_escpos
-mqtt_client.subscribe(os.getenv('MQTT_BROKER_TOPIC', 'printer/+/escpos'))
-print(f"Connected to MQTT broker, running loop() now")
-while mqtt_client.is_connected() is True:
-    mqtt_client.loop()
-print(f"Disconnected from MQTT broker '{os.getenv('MQTT_BROKER_IPV4', '192.168.1.1')}' - restarting...")
+print("Configuring ESCPOS server...")
+printer_usb_vid = g_config['SYSTEM'].get('PRINTER_USB_VID')
+printer_usb_pid = g_config['SYSTEM'].get('PRINTER_USB_PID')
+if printer_usb_vid is not None and printer_usb_pid is not None:
+    print(f"Connecting to USB printer '{printer_usb_vid}:{printer_usb_pid}'...")
+    usb_host.Port(board.GP26, board.GP27)
+    printer = None
+    while printer is None:
+        printer = usb.core.find(idVendor=printer_usb_vid, idProduct=printer_usb_pid)
+        time.sleep(1)
+    print(f"...connected to {printer.idVendor:04x}:{printer.idProduct:04x} {printer.manufacturer} / {printer.product} (#{printer.serial_number})")
+    printer.set_configuration()
+    g_runtime['printer'] = printer
+if 'HTTP' in g_config['ESCPOS.SERVICES'] and 'SERVICE:HTTP' in g_config:
+    from services.http import ServiceHTTP
+    g_config['SERVICE:HTTP'].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
+    g_config['SERVICE:HTTP'].setdefault('SERVER_PATH', '/')
+    service = ServiceHTTP(g_config['SYSTEM.DEBUG'])
+    if service.setup(g_config['SERVICE:HTTP'], g_runtime['printer']) is True:
+        g_runtime['services'].append(service)
+if 'MQTT' in g_config['ESCPOS.SERVICES'] and 'SERVICE:MQTT' in g_config:
+    from services.mqtt import ServiceMQTT
+    g_config['SERVICE:MQTT'].setdefault('BROKER_USER', None)
+    g_config['SERVICE:MQTT'].setdefault('BROKER_PASS', None)
+    service = ServiceMQTT(g_config['SYSTEM.DEBUG'])
+    if service.setup(g_config['SERVICE:MQTT'], g_runtime['printer']) is True:
+        g_runtime['services'].append(service)
+if 'TCP' in g_config['ESCPOS.SERVICES'] and 'SERVICE:TCP' in g_config:
+    from services.tcp  import ServiceTCP
+    g_config['SERVICE:TCP'].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
+    g_config['SERVICE:TCP'].setdefault('SERVER_PORT', 9100)
+    g_config['SERVICE:TCP'].setdefault('CLIENT_TIMEOUT', 1)
+    service = ServiceTCP(g_config['SYSTEM.DEBUG'])
+    if service.setup(g_config['SERVICE:TCP'], g_runtime['printer']) is True:
+        g_runtime['services'].append(service)
+print(f"...ESCPOS server configured ({len(g_runtime['services'])} active services)")
+
+print("Running ESCPOS service loop...")
+if g_runtime['printer'] is not None:
+    service_loop = True
+    while bool(service_loop) is True:
+        for service in g_runtime['services']:
+            service_loop = service_loop and service.loop()
+print(f"...ESCPOS service loop exited - reloading application in 5 seconds")
+time.sleep(5)
 supervisor.reload()
 
