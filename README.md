@@ -8,22 +8,11 @@ A circuitpython application that receives ESC/POS requests via network (HTTP, MQ
 
 # Software
 
-This code requires USB host-support (which for the Pi PicoW is CircuitPython 9 on master after 2024-02-15 - refer to commit [00824ad12229af15541d1431cf31f216e8e3587d](https://github.com/adafruit/circuitpython/commit/00824ad12229af15541d1431cf31f216e8e3587d)).
+This code requires USB host-support (which for the Pi PicoW is CircuitPython 9 on master after 2024-02-15 - refer to commit [00824ad12229af15541d1431cf31f216e8e3587d](https://github.com/adafruit/circuitpython/commit/00824ad12229af15541d1431cf31f216e8e3587d)), which is NOT in CP 9.0.0-beta.0 but should be in 9.0.0-beta.1 (or whatever the next beta release will be called).
 
 This circuitpython application uses [circuitpython_toml](https://github.com/elpekenin/circuitpython_toml/), [adafruit_httpserver](https://github.com/adafruit/Adafruit_CircuitPython_HTTPServer/) and [adafruit_minimqtt](https://github.com/adafruit/Adafruit_CircuitPython_MiniMQTT/) as libraries, they are provided (as copies for convenience, they might need updates at various times in the future) inside the "lib" folder and are all published under the MIT license.
 
 Both the system-configuration (everything that circuitpython manages, including network connectivity) and application-configuration (specific to this escpos-server code) is contained in settings.toml - but the application-specific logic is inside "tables" (as the TOML spec calls them, "sections" is a more common term known from INI-files). Because CircuitPython doesn't parse (and thus not expose as environment vars) tables/sections in settings.toml, this application uses [circuitpython_toml](https://github.com/elpekenin/circuitpython_toml/) to load the application-specific configurations from settings.toml (circuitpython itself just ignores them).
-
-**TODO - update this config section**
-- WIFI_SSID: The SSID of the AP to connect to (I didn't want to use CIRCUITPY_WIFI_SSID due to the included web interface; not needed/wanted)
-- WIFI_PSK: The password for the network
-- PRINTER_USB_VID: The USB vendor ID of the attached thermal printer (in hex notation, like "04b8" for Epson)
-- PRINTER_USB_PID: The USB product ID of the attached thermal printer (in hex notation, like "0e15" for TM-T20II)
-- MQTT_BROKER_IPV4: MQTT server address (DNS or IPv4)
-- MQTT_BROKER_USER: MQTT username (or unset for anonymous)
-- MQTT_BROKER_PASS: MQTT password (or unset for anonymous)
-- MQTT_BROKER_TOPIC: MQTT topic to listen on for ESCPOS-formatted print data
-- DEBUG: If set (to any value that yields *True* when passed to *bool()*) the application will wait on startup for a serial connection to the board (this is for debugging purposes so that nothing interesting happens before the serial connection has been established)
 
 # Hardware
 
@@ -40,6 +29,8 @@ The PicoW is powered using 24VDC provided by the printer (an Epson TM-T20II) via
   2. I would like to have MQTT (with ESCPOS as the payload) as the interface to my printer (because MQTT is how most of my stuff at home is "linked" together)
   3. I think that the Pi PicoW (with the Infineon CYW43xxx for WiFi/BT) is probably way more securely implemented at the WiFi-layer than some add-on WiFi-board/-dongle for some thermal printer; even if that's not effectively so, there's probably a much better chance for firmware updates.
 
-- Can't I just use a nightly build of circuitpython9 for the PicoW? Yes, as of 2024-02-15 that should work.
-
+- Can't I just use a developemnt build of circuitpython9 for the PicoW? Yes, as of 2024-02-15 that should work, take a look at their [S3 bucket for the PicoW](https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin/raspberry_pi_pico_w/).
+  
 - Shouldn't there be an issue or even pull-request for circuitpython? Absolutely, check out [issue #8359](https://github.com/adafruit/circuitpython/issues/8359) (for context and history) and [issue #8922](https://github.com/adafruit/circuitpython/issues/8922) (for the fix).
+
+- Why not provide the libs as MPYs for better performance and reduced memory consumption? Because CircuitPython 9 is still in beta and for the PicoW (my personal setup) it still needs the development builds, which are incompatible with the released MPYs of the other projects.
