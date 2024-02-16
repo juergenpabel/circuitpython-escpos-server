@@ -7,14 +7,14 @@ from . import Service
 class ServiceTCP(Service):
     tcp_server:  socketpool.Socket = None
     client_timeout: int = 1
-    printer = None
+    printers: dict = dict()
 
 
     def __init__(self, debug: bool):
         Service.__init__(self, debug)
 
 
-    def setup(self, config: toml.Dotty, printer) -> bool:
+    def setup(self, config: toml.Dotty, printers: dict) -> bool:
         if 'SERVER_PORT' not in config:
             print("ERROR: Missing 'SERVER_PORT' config in table/secion 'SERVICE:TCP' in settings.toml, disabling service TCP")
             return False
@@ -27,7 +27,7 @@ class ServiceTCP(Service):
         self.tcp_server.settimeout(0)
         self.client_timeout = int(config.get('CLIENT_TIMEOUT'))
         print(f"    ...TCP server now started")
-        self.printer = printer
+        self.printers = printers
         return True
 
 
@@ -45,17 +45,20 @@ class ServiceTCP(Service):
 
 
     def _on_tcp_connect(self, sock, addr):
+        print(self.printers)
         if self.debug is True:
             print(f"Processing TCP connection from IPv4='{addr}'")
-        if self.printer is not None:
-            buffer = bytearray(64)
-            self.printer.write(b'\x1b\x40')
-            self.printer.write(b'\x1b\x64\x04')
-            while sock is not None:
-                count = sock.recv_into(buffer, len(buffer))
-                self.printer.write(bytes(buffer[0:count]))
-                if count < len(buffer):
-                    sock = None
-            self.printer.write(b'\x1b\x64\x08')
-            self.printer.write(b'\x1b\x6d')
+        for printer in self.printers.values():
+            printer.write(b'\x1b\x40')
+            printer.write(b'\x1b\x64\x04')
+        buffer = bytearray(64)
+        while sock is not None:
+            count = sock.recv_into(buffer, len(buffer))
+            for printer in self.printers.values():
+                printer.write(bytes(buffer[0:count]))
+            if count < len(buffer):
+                sock = None
+        for printer in self.printers.values():
+            printer.write(b'\x1b\x64\x08')
+            printer.write(b'\x1b\x6d')
 

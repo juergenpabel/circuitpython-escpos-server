@@ -1,15 +1,15 @@
-WIFI_SSID = "<WIFI-SSID>"     # use CIRCUITPY_WIFI_SSID for (always) enabled CPY web workflow
-WIFI_PSK  = "<WIKI-PASSWORD>"    # use CIRCUITPY_WIFI_PSK  for (always) enabled CPY web workflow
+#WIFI_SSID = "<WIFI-SSID>"     # use CIRCUITPY_WIFI_SSID for (always) enabled CPY web workflow
+#WIFI_PSK  = "<WIFI-PASS>"     # use CIRCUITPY_WIFI_PSK  for (always) enabled CPY web workflow
 
 [SYSTEM]
-DEBUG = 0                       # activate to wait on startup for console connection
-PRINTER_USB_VID = "04b8"        # EPSON
-PRINTER_USB_PID = "0e15"        # TM-T20II
+DEBUG = 1                      # activate to wait on startup for console connection
 # TODO: NTP
 # TODO: option to enable web workflow in boot.py if resetted by software ...
 
 [ESCPOS]
-SERVICES = [ "MQTT", "TCP" ]           # services that shall be started
+SERVICES = [ "TCP" ]           # services that shall be started
+PRINTERS = [ "BLACK", "DEBUG" ]
+
 
 [SERVICE:HTTP]
 SERVER_IPV4 = "0.0.0.0"
@@ -26,4 +26,15 @@ BROKER_TOPIC = "printer/my-printer/escpos"
 SERVER_IPV4 = "0.0.0.0"
 SERVER_PORT = 9100
 CLIENT_TIMEOUT = 3
+
+
+[PRINTER:BLACK]
+DRIVER = "USB"
+VID = "04b8"        # EPSON
+PID = "0e15"        # TM-T20II
+
+[PRINTER:WHITE]
+DRIVER = "USB"
+VID = "04b8"        # EPSON
+PID = "0202"        # TM-T88IV
 

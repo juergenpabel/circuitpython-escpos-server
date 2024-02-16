@@ -10,7 +10,7 @@ class Printer:
     def loop(self) -> bool:
         return True
 
-    def write(self, data: bytearray) -> bool:
-        return True
+    def write(self, data: bytearray) -> None:
+        pass
 
 

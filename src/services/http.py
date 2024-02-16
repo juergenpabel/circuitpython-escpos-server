@@ -8,14 +8,14 @@ from . import Service
 
 class ServiceHTTP(Service):
     http_server: Server = None
-    printer = None
+    printers = dict()
 
 
     def __init__(self, debug: bool):
         Service.__init__(self, debug)
 
 
-    def setup(self, config: toml.Dotty, printer) -> bool:
+    def setup(self, config: toml.Dotty, printers: dict) -> bool:
         if 'SERVER_PATH' not in config:
             print("ERROR: Missing 'SERVER_PATH' config in table/secion 'SERVICE:HTTP' in settings.toml, disabling service HTTP")
             return False
@@ -24,7 +24,7 @@ class ServiceHTTP(Service):
         self.http_server.add_routes([Route(config.get('SERVER_PATH'), POST, self._on_http_post_request)])
         self.http_server.start(config.get('SERVER_IPV4'), int(config.get('SERVER_PORT')))
         print(f"    ...HTTP server started")
-        self.printer = printer
+        self.printers = printers
         return True
 
 
@@ -38,11 +38,11 @@ class ServiceHTTP(Service):
     def _on_http_post_request(self, request):
         if self.debug is True:
             print(f"Processing HTTP request from IPv4='{request.client_address}' with body of {len(request.body)} bytes")
-        if self.printer is not None:
-            self.printer.write(b'\x1b\x40')
-            self.printer.write(b'\x1b\x64\x04')
+        for name, printer in self.printers:
+            printer.write(b'\x1b\x40')
+            printer.write(b'\x1b\x64\x04')
             for offset in range(0, len(request.body), 64):
-                self.printer.write(request.body[offset:offset+64])
-            self.printer.write(b'\x1b\x64\x08')
-            self.printer.write(b'\x1b\x6d')
+                printer.write(request.body[offset:offset+64])
+            printer.write(b'\x1b\x64\x08')
+            printer.write(b'\x1b\x6d')
 
