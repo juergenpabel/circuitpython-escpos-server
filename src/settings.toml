@@ -1,8 +1,9 @@
 #WIFI_SSID = "<WIFI-SSID>"     # use CIRCUITPY_WIFI_SSID for (always) enabled CPY web workflow
 #WIFI_PSK  = "<WIFI-PASS>"     # use CIRCUITPY_WIFI_PSK  for (always) enabled CPY web workflow
 
-[SYSTEM]
 DEBUG = 1                      # activate to wait on startup for console connection
+
+[SYSTEM]
 # TODO: NTP
 # TODO: option to enable web workflow in boot.py if resetted by software ...
 
