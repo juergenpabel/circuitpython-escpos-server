@@ -4,8 +4,6 @@ A circuitpython application that receives ESC/POS requests via network (HTTP, MQ
 
 **Note**: The original version of this software was published in my github repo "circuitpython-picow-escpos" - but since this is not in any way confined to the Pi Pico W, I re-published this software in this repository and continue its development here.
 
-**Warning**: This software is heavily work-in-progress, thus: **before I publish release 1.0, it might not even be fully implemented or horribly broken.**
-
 # Software
 
 This code requires USB host-support (which for the Pi PicoW is CircuitPython 9 on master after 2024-02-15 - refer to commit [00824ad12229af15541d1431cf31f216e8e3587d](https://github.com/adafruit/circuitpython/commit/00824ad12229af15541d1431cf31f216e8e3587d)), which is NOT in CP 9.0.0-beta.0 but should be in 9.0.0-beta.1 (or whatever the next beta release will be called).
