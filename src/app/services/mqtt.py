@@ -50,10 +50,8 @@ class ServiceMQTT(Service):
         if self.debug is True:
             print(f"Processing MQTT message on topic '{topic}' with a payload of {len(payload)} bytes")
         for printer in self.printers.values():
-            printer.write(b'\x1b\x40')
-            printer.write(b'\x1b\x64\x04')
+            printer.write_init()
             for offset in range(0, len(payload), 64):
                 printer.write(bytes(payload[offset:offset+64]))
-            printer.write(b'\x1b\x64\x08')
-            printer.write(b'\x1b\x6d')
+            printer.write_fini()
 

@@ -15,7 +15,8 @@ class PrinterUSB(Printer):
         Printer.__init__(self, debug)
 
 
-    def setup(self, config: toml.Dotty) -> bool:    
+    def setup(self, config: toml.Dotty) -> bool:
+        Printer.setup(self, config)
         self.usb_vid = config.get('USB_VID')
         self.usb_pid = config.get('USB_PID')
         if self.usb_vid is None or self.usb_pid is None:

@@ -6,7 +6,7 @@ class PrinterDEBUG(Printer):
         Printer.__init__(self, True)
 
     def setup(self, config: toml.Dotty) -> bool:
-        return True
+        return Printer.setup(self, config)
 
     def loop(self) -> bool:
         return True
