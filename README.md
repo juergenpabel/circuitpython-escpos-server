@@ -1,8 +1,8 @@
 # Abstract
 
-A circuitpython application that receives ESC/POS requests via network (HTTP, MQTT &amp; RAW) and relays them to USB-connected thermal printer(s). The application waits via HTTP, MQTT and/or RAW-protocol for ESCPOS-formatted printjobs and sends them via USB to the configured thermal printer/s (without any parsing; but with additional printer reset/initialization and a paper-cut command at the end).
+A circuitpython application that receives ESC/POS requests via network (HTTP, MQTT &amp; RAW) and relays them to USB-connected thermal printer(s). The application waits via HTTP, MQTT and/or RAW-protocol for ESCPOS-formatted printjobs and sends them via USB to the configured thermal printer/s (without any parsing; but with additional printer reset/initialization before and a paper-cut command after the printjob).
 
-**Note**: The original version of this software was published in my github repo "circuitpython-picow-escpos" - but since this is not in any way confined to the Pi Pico W, I re-published this software in this repository and continue its development.
+**Note**: The original version of this software was published in my github repo "circuitpython-picow-escpos" - but since this is not in any way confined to the Pi Pico W, I re-published this software in this repository and continue its development here.
 
 **Warning**: This software is heavily work-in-progress, thus: **before I publish release 1.0, it might not even be fully implemented or horribly broken.**
 
@@ -20,7 +20,7 @@ This section describes my own hardware setup (using a PicoW), as shown in this p
 
 ![Picture of setup with more details](https://raw.githubusercontent.com/juergenpabel/circuitpython-escpos-server/master/resources/images/setup_detail.jpg)
 
-The PicoW is powered using 24VDC provided by the printer (an Epson TM-T20II) via the DK-/Drawer-Kick-Connector; V+ (Pin 4) and GND (Pin 6) are sent into a step-down converter that provides 5V per USB. The PicoW plugs into the step-down converter and exposes a USB host port via GPIO (a new feature in CircuitPython 9) and connects to the USB interface on the printer (for sending ESC/POS prinbt jobs). This setup allows for a printer installation using only power (and WiFi).
+The PicoW is powered using 24VDC provided by the printer (an Epson TM-T20II) via the DK-/Drawer-Kick-Connector; V+ (Pin 4) and GND (Pin 6) are sent into a step-down converter that provides 5V per USB. The PicoW plugs into the step-down converter and exposes a USB host port via GPIO (a new feature for the PicoW in CircuitPython 9) and connects to the USB interface on the printer (for sending ESC/POS prinbt jobs). This setup allows for a printer installation using only one power cord (and WiFi).
 
 # FAQ
 
@@ -29,6 +29,8 @@ The PicoW is powered using 24VDC provided by the printer (an Epson TM-T20II) via
   2. I would like to have MQTT (with ESCPOS as the payload) as the interface to my printer (because MQTT is how most of my stuff at home is "linked" together)
   3. I think that the Pi PicoW (with the Infineon CYW43xxx for WiFi/BT) is probably way more securely implemented at the WiFi-layer than some add-on WiFi-board/-dongle for some thermal printer; even if that's not effectively so, there's probably a much better chance for firmware updates.
 
-- Can't I just use a developemnt build of circuitpython9 for the PicoW? Yes, as of 2024-02-15 that should work, take a look at their [S3 bucket for the PicoW](https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin/raspberry_pi_pico_w/).
+- Which circuit python version for my &lt;board-name&gt;? Probably Circuitpython 8, it just needs [usb_host](https://docs.circuitpython.org/en/8.2.x/shared-bindings/usb_host/index.html) support (see the "Available on these boards" list) - the list is rather short, though.
+
+- Which circuit python version for PicoW? As of 2024-02-15: use a development build, take a look at their [S3 bucket for the PicoW](https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin/raspberry_pi_pico_w/).
   
 - Why not provide the libs as MPYs for better performance and reduced memory consumption? Because CircuitPython 9 is still in beta and for the PicoW (my personal setup) it still needs the development builds, which are incompatible with the released MPYs of the other projects.
