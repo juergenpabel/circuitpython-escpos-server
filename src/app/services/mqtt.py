@@ -15,6 +15,7 @@ class ServiceMQTT(Service):
 
 
     def setup(self, config: toml.Dotty, printers: dict) -> bool:
+        Service.setup(self, config, printers)
         if 'BROKER_IPV4' not in config:
             print("ERROR: Missing 'BROKER_IPV4' config in table/secion 'SERVICE:MQTT' in settings.toml, disabling service MQTT")
             return False
@@ -26,8 +27,7 @@ class ServiceMQTT(Service):
                                       username=config.get('BROKER_USER'),
                                       password=config.get('BROKER_PASS'),
                                       socket_pool=socketpool.SocketPool(wifi.radio),
-                                      use_binary_mode=True,
-                                      user_data=printers)
+                                      use_binary_mode=True)
         while self.mqtt_client.is_connected() is False:
             self.mqtt_client.connect()
             time.sleep(1)
@@ -49,7 +49,7 @@ class ServiceMQTT(Service):
     def _on_mqtt_message(self, client, topic, payload):
         if self.debug is True:
             print(f"Processing MQTT message on topic '{topic}' with a payload of {len(payload)} bytes")
-        for printer in client.user_data.values():
+        for printer in self.printers.values():
             printer.write(b'\x1b\x40')
             printer.write(b'\x1b\x64\x04')
             for offset in range(0, len(payload), 64):

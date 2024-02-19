@@ -6,6 +6,7 @@ class Service:
         self.debug = debug
 
     def setup(self, config: toml.Dotty, printers: dict) -> bool:
+        self.printers = printers
         return True
 
     def loop(self) -> bool:

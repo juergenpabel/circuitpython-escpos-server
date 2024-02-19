@@ -20,6 +20,7 @@ class Server:
     def setup(self):
         print(f"Configuring printers...")
         for printer_name in self.config['ESCPOS']['PRINTERS']:
+            print(f"    Configuring printer '{printer_name}'...")
             printer_section = f"PRINTER:{printer_name}"
             if printer_section in self.config and 'DRIVER' in self.config[printer_section]:
                 printer = None
@@ -31,18 +32,23 @@ class Server:
                     from .printers.usb import PrinterUSB
                     printer = PrinterUSB(self.debug)
                 else:
-                    print(f"    ERROR in configuration for printer '{printer_name}': unknown driver type '{printer_driver}', skipping printer")
+                    print(f"    ERROR: in configuration for printer '{printer_name}': unknown driver type '{printer_driver}', skipping printer")
                 if printer is not None:
                     if printer.setup(self.config[printer_section]) is True:
                         self.runtime['printers'][printer_name] = printer
-                        print(f"    Added printer '{printer_name}'")
                     else:
-                        print(f"    WARNING Printer{printer_driver}.setup() failed for printer '{printer_name}', skipping printer")
+                        print(f"        WARNING: Printer{printer_driver}.setup() failed for printer '{printer_name}', skipping printer")
+            print(f"    ...configuration for printer '{printer_name}' finished")
         print(f"...printers configured ({len(self.runtime['printers'])} active printers)")
 
         print(f"Configuring services...")
         for service_name in self.config['ESCPOS']['SERVICES']:
+            print(f"    Configuring service '{service_name}'...")
             service_section = f"SERVICE:{service_name}"
+            if service_section not in self.config:
+                print(f"        ERROR: configuration table/section 'SERVICE:{service_name}' not found, skipping service")
+            if 'DRIVER' not in self.config[service_section]:
+                print(f"        ERROR: missing 'DRIVER' config in table/section 'SERVICE:{service_name}', skipping service")
             if service_section in self.config and 'DRIVER' in self.config[service_section]:
                 service = None
                 service_driver = self.config[service_section]['DRIVER'].upper()
@@ -64,13 +70,22 @@ class Server:
                     from .services.tcp import ServiceTCP
                     service = ServiceTCP(self.debug)
                 else:
-                    print(f"    ERROR in configuration for service '{service_name}': unknown driver type '{service_driver}', skipping service")
+                    print(f"        ERROR: unknown driver type '{service_driver}' in configuration table/section 'SERVICE:{service_name}', skipping service")
                 if service is not None:
-                    if service.setup(self.config[service_section], self.runtime['printers']) is True:
-                        self.runtime['services'][service_name] = service
-                        print(f"    Added service '{service_name}'")
-                    else:
-                        print(f"    WARNING Service{service_driver}.setup() failed for service '{service_name}', skipping service")
+                    self.config[service_section].setdefault('PRINTERS', self.runtime['printers'].keys())
+                    service2printers = {}
+                    for printer_name in self.config[service_section]['PRINTERS']:
+                        if printer_name in self.runtime['printers']:
+                            service2printers[printer_name] = self.runtime['printers'][printer_name]
+                        if len(service2printers) == 0:
+                            print(f"        WARNING: No printers assigned to service, skipping service")
+                        else:
+                            if service.setup(self.config[service_section], service2printers) is True:
+                                self.runtime['services'][service_name] = service
+                                print(f"        INFO: Assigned printers = [{','.join(service2printers.keys())}]")
+                            else:
+                                print(f"        WARNING: Service{service_driver}.setup() failed for service '{service_name}', skipping service")
+            print(f"    ...configuration for service '{service_name}' finished")
         print(f"...services configured ({len(self.runtime['services'])} active services)")
 
 
