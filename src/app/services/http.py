@@ -38,10 +38,8 @@ class ServiceHTTP(Service):
         if self.debug is True:
             print(f"Processing HTTP request from IPv4='{request.client_address}' with body of {len(request.body)} bytes")
         for name, printer in self.printers:
-            printer.write(b'\x1b\x40')
-            printer.write(b'\x1b\x64\x04')
+            printer.write_init()
             for offset in range(0, len(request.body), 64):
                 printer.write(request.body[offset:offset+64])
-            printer.write(b'\x1b\x64\x08')
-            printer.write(b'\x1b\x6d')
+            printer.write_fini()
 

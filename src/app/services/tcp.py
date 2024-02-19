@@ -47,8 +47,7 @@ class ServiceTCP(Service):
         if self.debug is True:
             print(f"            DEBUG: Processing TCP connection from IPv4='{addr}'")
         for printer in self.printers.values():
-            printer.write(b'\x1b\x40')
-            printer.write(b'\x1b\x64\x04')
+            printer.write_init()
         buffer = bytearray(64)
         while sock is not None:
             count = sock.recv_into(buffer, len(buffer))
@@ -57,6 +56,5 @@ class ServiceTCP(Service):
             if count < len(buffer):
                 sock = None
         for printer in self.printers.values():
-            printer.write(b'\x1b\x64\x08')
-            printer.write(b'\x1b\x6d')
+            printer.write_fini()
 
