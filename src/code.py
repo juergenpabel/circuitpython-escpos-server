@@ -1,86 +1,59 @@
+import os
 import time
-import board
 import wifi
-import usb.core
-import usb_host
 import supervisor
-import toml
+from app import Server
 
-g_runtime = {}
-g_runtime['printers'] = dict()
-g_runtime['services'] = list()
+g_debug: bool = False
 
-g_config = toml.load('settings.toml')
-g_config.setdefault('SYSTEM', {'DEBUG': False})
-g_config['SYSTEM.DEBUG'] = bool(g_config['SYSTEM.DEBUG'])
-g_config.setdefault('ESCPOS', {})
-g_config.setdefault('PRINTER:DEBUG', {'DRIVER': 'DEBUG'})
+print("\n\ncircuitpython-escpos-server")
+if g_debug is False:
+    if bool(os.getenv('DEBUG', False)) is True:
+        g_debug = True
 
-if g_config['SYSTEM.DEBUG'] is True:
-    while supervisor.runtime.serial_connected is False:
-        time.sleep(1)
+if wifi.radio.connected is False:
+    circuitpython_wifi_ssid = os.getenv('CIRCUITPY_WIFI_SSID')
+    if circuitpython_wifi_ssid is None:
+        wifi_ssid = os.getenv('WIFI_SSID', None)
+        wifi_psk  = os.getenv('WIFI_PSK',  None)
+        if wifi_ssid is not None:
+            mac = ':'.join(['{:02X}'.format(i) for i in wifi.radio.mac_address])
+            print(f"Connecting to SSID '{wifi_ssid}' (wifi.Radio.mac_address='{mac}')...")
+            try:
+                wifi.radio.connect(wifi_ssid, wifi_psk)
+                print(f"...connected with IPv4={wifi.radio.ipv4_address}")
+            except ConnectionError:
+                wifi_offline_grace_secs = int(os.getenv('WIFI_OFFLINE_GRACE_PERIOD', '300'))
+                print(f"...could not connected to SSID '{wifi_ssid}' (WIFI_SSID); waiting for {wifi_offline_grace_secs} seconds (WIFI_OFFLINE_GRACE_PERIOD), than reloading circuitpython app")
+                time.sleep(wifi_offline_grace_secs)
+                supervisor.reload()
 
-if 'WIFI_SSID' in g_config:
-    mac = ':'.join(['{:02X}'.format(i) for i in wifi.radio.mac_address])
-    print(f"Connecting to SSID '{g_config['WIFI_SSID']}' with MAC='{mac}'...")
-    wifi.radio.connect(g_config['WIFI_SSID'], g_config['WIFI_PSK'])
-    print(f"...connected with IPv4={wifi.radio.ipv4_address}")
-    time.sleep(1)
-
-print(f"Configuring printers...")
-for printer_name in g_config['ESCPOS']['PRINTERS']:
-    printer_section = f"PRINTER:{printer_name}"
-    if printer_section in g_config and 'DRIVER' in g_config[printer_section]:
-        printer = None
-        printer_driver = g_config[printer_section]['DRIVER'].upper()
-        if printer_driver == 'DEBUG':
-            from printers.debug import PrinterDebug
-            printer = PrinterDebug()
-        elif printer_driver == 'USB':
-            from printers.usb import PrinterUSB
-            printer = PrinterUSB(g_config['SYSTEM.DEBUG'])
+server = Server(g_debug)
+server.setup()
+print(f"Running server loop (IPv4={wifi.radio.ipv4_address})...")
+try:
+    wifi_offline_timestamp_ms = None
+    wifi_offline_grace_ms = float(os.getenv('WIFI_OFFLINE_GRACE_PERIOD', '300')) * 1000
+    loop_result = True
+    while loop_result is True:
+        if wifi_offline_timestamp_ms is None:
+            if wifi.radio.connected is False and wifi.radio.ap_active is False:
+                print(f"    INFO: WIFI disconnected, waiting for {int(wifi_offline_grace_ms/1000)} seconds (WIFI_OFFLINE_GRACE_PERIOD) to come back online")
+                wifi_offline_timestamp_ms = time.monotonic()
         else:
-            print(f"    ERROR in configuration for printer '{printer_name}': unknown driver type '{printer_driver}', skipping printer")
-        if printer is not None:
-            if printer.setup(g_config[printer_section]) is True:
-                print(f"    adding printer '{printer_name}'")
-                g_runtime['printers'][printer_name] = printer
+            if wifi.radio.connected is True:
+                print(f"    INFO: WIFI reconnected (IPv4={wifi.radio.ipv4_address})")
+                wifi_offline_timestamp_ms = None
             else:
-                print(f"    printer '{printer_name}' returned error during setup(), skipping printer")                
-print(f"...printers configured ({len(g_runtime['printers'])} active printers)")
-
-print(f"Configuring services...")
-if 'HTTP' in g_config['ESCPOS.SERVICES'] and 'SERVICE:HTTP' in g_config:
-    from services.http import ServiceHTTP
-    g_config['SERVICE:HTTP'].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
-    g_config['SERVICE:HTTP'].setdefault('SERVER_PATH', '/')
-    service = ServiceHTTP(g_config['SYSTEM.DEBUG'])
-    if service.setup(g_config['SERVICE:HTTP'], g_runtime['printers']) is True:
-        g_runtime['services'].append(service)
-if 'MQTT' in g_config['ESCPOS.SERVICES'] and 'SERVICE:MQTT' in g_config:
-    from services.mqtt import ServiceMQTT
-    g_config['SERVICE:MQTT'].setdefault('BROKER_USER', None)
-    g_config['SERVICE:MQTT'].setdefault('BROKER_PASS', None)
-    service = ServiceMQTT(g_config['SYSTEM.DEBUG'])
-    if service.setup(g_config['SERVICE:MQTT'], g_runtime['printers']) is True:
-        g_runtime['services'].append(service)
-if 'TCP' in g_config['ESCPOS.SERVICES'] and 'SERVICE:TCP' in g_config:
-    from services.tcp  import ServiceTCP
-    g_config['SERVICE:TCP'].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
-    g_config['SERVICE:TCP'].setdefault('SERVER_PORT', 9100)
-    g_config['SERVICE:TCP'].setdefault('CLIENT_TIMEOUT', 1)
-    service = ServiceTCP(g_config['SYSTEM.DEBUG'])
-    if service.setup(g_config['SERVICE:TCP'], g_runtime['printers']) is True:
-        g_runtime['services'].append(service)
-print(f"...services configured ({len(g_runtime['services'])} active services)")
-
-print("Running server loop...")
-if g_runtime['printers'] is not None:
-    service_loop = True
-    while bool(service_loop) is True:
-        for service in g_runtime['services']:
-            service_loop &= service.loop()
-print(f"...server loop exited - reloading application in 5 seconds")
+                if time.monotonic() > wifi_offline_timestamp_ms + wifi_offline_grace_ms:
+                    print(f"    FATAL: WIFI offline for more than {int(wifi_offline_grace_ms/1000)} seconds (WIFI_OFFLINE_GRACE_PERIOD), resetting NOW")
+                    import microcontroller
+                    microcontroller.reset()
+        loop_result = server.loop()
+except BaseException as e:
+    print(f"    FATAL: {e}")
+    pass
+print(f"...server loop exited - restarting in 5 seconds")
 time.sleep(5)
 supervisor.reload()
 

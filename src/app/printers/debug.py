@@ -1,6 +1,6 @@
 from . import Printer
 
-class PrinterDebug(Printer):
+class PrinterDEBUG(Printer):
 
     def __init__(self):
         Printer.__init__(self, True)
