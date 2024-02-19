@@ -1,44 +1,44 @@
 #WIFI_SSID = "<WIFI-SSID>"     # use CIRCUITPY_WIFI_SSID for (always) enabled CPY web workflow
 #WIFI_PSK  = "<WIFI-PASS>"     # use CIRCUITPY_WIFI_PSK  for (always) enabled CPY web workflow
 
-DEBUG = 1                      # activate to wait on startup for console connection
+DEBUG = 1
 
 [SYSTEM]
 # TODO: NTP
 # TODO: option to enable web workflow in boot.py if resetted by software ...
 
 [ESCPOS]
-SERVICES = [ "TCP" ]               # services that shall be started
+SERVICES = [ "RAW" ]               # services that shall be started
 PRINTERS = [ "TM-T20II", "DEBUG" ] # printers that shall receive printjobs
 
 
 [SERVICE:HTTP]
 DRIVER = "HTTP"
-SERVER_IPV4 = "0.0.0.0"
-SERVER_PORT = 8080
-SERVER_PATH = "/escpos"
+SERVER_IPV4 = "0.0.0.0"                    # default = "0.0.0.0"
+SERVER_PORT = 8080                         # default = 8080
+SERVER_PATH = "/escpos"                    # default = "/"
 
 [SERVICE:MQTT]
 DRIVER = "MQTT"
-BROKER_IPV4 = "192.168.4.1"
-#BROKER_USER = "YOUR-MQTT-USERNAME"
-#BROKER_PASS = "YOUR-MQTT-PASSWORD"
-BROKER_TOPIC = "printer/my-printer/escpos"
+BROKER_IPV4 = "192.168.4.1"                # mandatory
+#BROKER_USER = "YOUR-MQTT-USERNAME"        # optional, unless required by broker
+#BROKER_PASS = "YOUR-MQTT-PASSWORD"        # optional, unless required by broker
+BROKER_TOPIC = "printer/my-printer/escpos" # mandatory
 
-[SERVICE:TCP]
+[SERVICE:RAW]
 DRIVER = "TCP"
-SERVER_IPV4 = "0.0.0.0"
-SERVER_PORT = 9100
-CLIENT_TIMEOUT = 3
+SERVER_IPV4 = "0.0.0.0"                    # default = "0.0.0.0"
+SERVER_PORT = 9100                         # default = 9100
+CLIENT_TIMEOUT = 3                         # default = 3
 
 
 [PRINTER:TM-T20II]
 DRIVER = "USB"
-VID = "04b8"        # EPSON
-PID = "0e15"        # TM-T20II
+USB_VID = "04b8"                           # mandatory, 04b8 = EPSON
+USB_PID = "0e15"                           # mandatory, 0e15 = TM-T20II
 
 [PRINTER:TM-T88IV]
 DRIVER = "USB"
-VID = "04b8"        # EPSON
-PID = "0202"        # TM-T88IV
+USB_VID = "04b8"                           # mandatory, 04b8 = EPSON
+USB_PID = "0202"                           # mandatory, 0202 = TM-T88IV
 

@@ -48,6 +48,7 @@ class Server:
                 service_driver = self.config[service_section]['DRIVER'].upper()
                 if service_driver == 'HTTP':
                     self.config[service_section].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
+                    self.config[service_section].setdefault('SERVER_PORT', 8080)
                     self.config[service_section].setdefault('SERVER_PATH', '/')
                     from .services.http import ServiceHTTP
                     service = ServiceHTTP(self.debug)
