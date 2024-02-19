@@ -51,8 +51,7 @@ try:
                     microcontroller.reset()
         loop_result = server.loop()
 except BaseException as e:
-    print(f"    FATAL: {e}")
-    pass
+    print(f"    FATAL: <{type(e).__name__}> {str(e)}")
 print(f"...server loop exited - restarting in 5 seconds")
 time.sleep(5)
 supervisor.reload()

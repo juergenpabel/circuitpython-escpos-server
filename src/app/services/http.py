@@ -8,7 +8,6 @@ from . import Service
 
 class ServiceHTTP(Service):
     http_server: Server = None
-    printers = dict()
 
 
     def __init__(self, debug: bool):
@@ -16,6 +15,7 @@ class ServiceHTTP(Service):
 
 
     def setup(self, config: toml.Dotty, printers: dict) -> bool:
+        Service.setup(self, config, printers)
         if 'SERVER_PATH' not in config:
             print("ERROR: Missing 'SERVER_PATH' config in table/secion 'SERVICE:HTTP' in settings.toml, disabling service HTTP")
             return False
@@ -24,7 +24,6 @@ class ServiceHTTP(Service):
         self.http_server.add_routes([Route(config.get('SERVER_PATH'), POST, self._on_http_post_request)])
         self.http_server.start(config.get('SERVER_IPV4'), int(config.get('SERVER_PORT')))
         print(f"    ...HTTP server started")
-        self.printers = printers
         return True
 
 

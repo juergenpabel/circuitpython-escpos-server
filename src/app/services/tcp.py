@@ -7,7 +7,6 @@ from . import Service
 class ServiceTCP(Service):
     tcp_server:  socketpool.Socket = None
     client_timeout: int = 1
-    printers: dict = dict()
 
 
     def __init__(self, debug: bool):
@@ -15,19 +14,19 @@ class ServiceTCP(Service):
 
 
     def setup(self, config: toml.Dotty, printers: dict) -> bool:
+        Service.setup(self, config, printers)
         if 'SERVER_PORT' not in config:
-            print("ERROR: Missing 'SERVER_PORT' config in table/secion 'SERVICE:TCP' in settings.toml, disabling service TCP")
+            print("            ERROR: Missing 'SERVER_PORT' config in table/secion 'SERVICE:TCP' in settings.toml, disabling service TCP")
             return False
 
-        print(f"    Starting TCP server on IPv4='{config.get('SERVER_IPV4')}' and port '{config.get('SERVER_PORT')}'...")
+        print(f"        Starting TCP server on IPv4='{config.get('SERVER_IPV4')}' and port '{config.get('SERVER_PORT')}'...")
         pool = socketpool.SocketPool(wifi.radio)
         self.tcp_server = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
         self.tcp_server.bind((config.get('SERVER_IPV4'), int(config.get('SERVER_PORT'))))
         self.tcp_server.listen(1)
         self.tcp_server.settimeout(0)
         self.client_timeout = int(config.get('CLIENT_TIMEOUT'))
-        print(f"    ...TCP server now started")
-        self.printers = printers
+        print(f"        ...TCP server now started")
         return True
 
 
@@ -45,9 +44,8 @@ class ServiceTCP(Service):
 
 
     def _on_tcp_connect(self, sock, addr):
-        print(self.printers)
         if self.debug is True:
-            print(f"Processing TCP connection from IPv4='{addr}'")
+            print(f"            DEBUG: Processing TCP connection from IPv4='{addr}'")
         for printer in self.printers.values():
             printer.write(b'\x1b\x40')
             printer.write(b'\x1b\x64\x04')
