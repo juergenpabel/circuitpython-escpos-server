@@ -1,4 +1,5 @@
 import os
+import time
 import wifi
 import toml
 
@@ -50,6 +51,9 @@ class Server:
         print(f"...printers configured ({len(self.runtime['printers'])} active printers)")
 
         print(f"Configuring services...")
+        if len(self.runtime['printers']) == 0:
+            print(f"    ERROR: no active printers, not activating any services")
+            self.config['ESCPOS']['SERVICES'] = []
         for service_name in self.config['ESCPOS']['SERVICES']:
             print(f"    Configuring service '{service_name}'...")
             service_section = f"SERVICE:{service_name}"
@@ -99,6 +103,8 @@ class Server:
 
     def loop(self) -> bool:
         result = True
+        if len(self.runtime['services']) == 0:
+            result = False
         for service in self.runtime['services'].values():
             if service.loop() is False:
                 result = False
