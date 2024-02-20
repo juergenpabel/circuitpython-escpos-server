@@ -1,3 +1,4 @@
+from microcontroller import Pin
 import board
 import usb.core
 import usb_host
@@ -6,28 +7,40 @@ from . import Printer
 
 
 class PrinterUSB(Printer):
-    usb_vid: str = None
-    usb_pid: str = None
+    host_usb_dp: str = None
+    host_usb_dm: str = None
+    device_usb_vid: str = None
+    device_usb_pid: str = None
     device = None
 
 
-    def __init__(self, debug: bool):
+    def __init__(self, usb_dp: str, usb_dm: str, debug: bool):
         Printer.__init__(self, debug)
+        self.host_usb_dp = usb_dp
+        self.host_usb_dm = usb_dm
+        klass = self.__class__
+        if not hasattr(klass, 'usb_host_port'):
+            pin_usb_dp = board.__dict__.get(self.host_usb_dp)
+            pin_usb_dm = board.__dict__.get(self.host_usb_dm)
+            if isinstance(pin_usb_dp, Pin) is True and isinstance(pin_usb_dm, Pin) is True:
+                klass.usb_host_port = usb_host.Port(pin_usb_dp, pin_usb_dm)
 
 
     def setup(self, config: toml.Dotty) -> bool:
-        Printer.setup(self, config)
-        self.usb_vid = config.get('USB_VID')
-        self.usb_pid = config.get('USB_PID')
-        if self.usb_vid is None or self.usb_pid is None:
-            print(f"        ERROR in configuration: missing USB_VID/USB_PID values, skipping")
+        if hasattr(self.__class__, 'usb_host_port') is False:
+            print(f"        ERROR: failed to instantiate usb_host.Port({self.host_usb_dp}, {self.host_usb_dm})")
             return False
-        print(f"        Connecting to USB printer '{self.usb_vid}:{self.usb_pid}'...")
-        usb_host.Port(board.GP26, board.GP27)
+        Printer.setup(self, config)
+        self.device_usb_vid = config.get('USB_VID')
+        self.device_usb_pid = config.get('USB_PID')
+        if self.device_usb_vid is None or self.device_usb_pid is None:
+            print(f"        ERROR: missing USB_VID and/or USB_PID definitions")
+            return False
+        print(f"        Connecting to USB printer '{self.device_usb_vid}:{self.device_usb_pid}'...")
         usb.core.find() # dummy enumeration because on RP2040 first enumeration always fails
-        self.device = usb.core.find(idVendor=self.usb_vid, idProduct=self.usb_pid)
+        self.device = usb.core.find(idVendor=self.device_usb_vid, idProduct=self.device_usb_pid)
         if self.device is None:
-            print(f"        ...device '{self.usb_vid}:{self.usb_pid}' not found")
+            print(f"        ...device '{self.device_usb_vid}:{self.device_usb_pid}' not found")
             return False
         print(f"        ...connected to {self.device.idVendor:04x}:{self.device.idProduct:04x} {self.device.manufacturer} / {self.device.product} (#{self.device.serial_number})")
         self.device.set_configuration()
