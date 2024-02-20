@@ -28,6 +28,9 @@ class Server:
                 if printer_driver == 'DEBUG':
                     from .printers.debug import PrinterDEBUG
                     printer = PrinterDEBUG()
+                elif printer_driver == 'SERIAL':
+                    from .printers.serial import PrinterSerial
+                    printer = PrinterSerial(self.debug)
                 elif printer_driver == 'USB':
                     from .printers.usb import PrinterUSB
                     usb_host_pin_dp = self.config['SYSTEM'].get('USB_HOST_PIN_DP')

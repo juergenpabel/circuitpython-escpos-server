@@ -45,7 +45,7 @@ class ServiceTCP(Service):
 
     def _on_tcp_connect(self, sock, addr):
         if self.debug is True:
-            print(f"            DEBUG: Processing TCP connection from IPv4='{addr}'")
+            print(f"    DEBUG: Processing TCP connection from IPv4='{addr}'")
         for printer in self.printers.values():
             printer.write_init()
         buffer = bytearray(64)
