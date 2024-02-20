@@ -52,6 +52,6 @@ class PrinterUSB(Printer):
 
 
     def write(self, data: bytearray) -> None:
-        if device is not None:
-            device.write(1, data)
+        if self.device is not None:
+            self.device.write(1, data)
 
