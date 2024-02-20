@@ -30,9 +30,14 @@ class Server:
                     printer = PrinterDEBUG()
                 elif printer_driver == 'USB':
                     from .printers.usb import PrinterUSB
-                    printer = PrinterUSB(self.debug)
+                    usb_host_pin_dp = self.config['SYSTEM'].get('USB_HOST_PIN_DP')
+                    usb_host_pin_dm = self.config['SYSTEM'].get('USB_HOST_PIN_DM')
+                    if usb_host_pin_dp is not None and usb_host_pin_dm is not None:
+                        printer = PrinterUSB(usb_host_pin_dp, usb_host_pin_dm, self.debug)
+                    else:
+                        print(f"        ERROR: in configuration for printer '{printer_name}': missing pin definition in table/section SYSTEM (USB_HOST_PIN_DP & USB_HOST_PIN_DM), skipping printer")
                 else:
-                    print(f"    ERROR: in configuration for printer '{printer_name}': unknown driver type '{printer_driver}', skipping printer")
+                    print(f"        ERROR: in configuration for printer '{printer_name}': unknown driver type '{printer_driver}', skipping printer")
                 if printer is not None:
                     if printer.setup(self.config[printer_section]) is True:
                         self.runtime['printers'][printer_name] = printer
