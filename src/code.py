@@ -32,21 +32,21 @@ server = Server(g_debug)
 server.setup()
 print(f"Running server loop (IPv4={wifi.radio.ipv4_address})...")
 try:
-    wifi_offline_timestamp_ms = None
-    wifi_offline_grace_ms = float(os.getenv('WIFI_OFFLINE_GRACE_PERIOD', '300')) * 1000
+    wifi_offline_timestamp_secs = None
+    wifi_offline_grace_secs = float(os.getenv('WIFI_OFFLINE_GRACE_PERIOD', '300'))
     loop_result = True
     while loop_result is True:
-        if wifi_offline_timestamp_ms is None:
+        if wifi_offline_timestamp_secs is None:
             if wifi.radio.connected is False and wifi.radio.ap_active is False:
-                print(f"    INFO: WIFI disconnected, waiting for {int(wifi_offline_grace_ms/1000)} seconds (WIFI_OFFLINE_GRACE_PERIOD) to come back online")
-                wifi_offline_timestamp_ms = time.monotonic()
+                print(f"    INFO: WIFI disconnected, waiting for {int(wifi_offline_grace_secs)} seconds (WIFI_OFFLINE_GRACE_PERIOD) to come back online")
+                wifi_offline_timestamp_secs = time.monotonic()
         else:
             if wifi.radio.connected is True:
                 print(f"    INFO: WIFI reconnected (IPv4={wifi.radio.ipv4_address})")
-                wifi_offline_timestamp_ms = None
+                wifi_offline_timestamp_secs = None
             else:
-                if time.monotonic() > wifi_offline_timestamp_ms + wifi_offline_grace_ms:
-                    print(f"    FATAL: WIFI offline for more than {int(wifi_offline_grace_ms/1000)} seconds (WIFI_OFFLINE_GRACE_PERIOD), resetting NOW")
+                if time.monotonic() > wifi_offline_timestamp_secs + wifi_offline_grace_secs:
+                    print(f"    FATAL: WIFI offline for more than {int(wifi_offline_grace_secs)} seconds (WIFI_OFFLINE_GRACE_PERIOD), resetting NOW")
                     import microcontroller
                     microcontroller.reset()
         loop_result = server.loop()
