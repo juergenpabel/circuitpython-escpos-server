@@ -10,7 +10,7 @@ This code requires USB host-support (which for the Pi PicoW is CircuitPython 9 o
 
 This circuitpython application uses [circuitpython_toml](https://github.com/elpekenin/circuitpython_toml/), [adafruit_httpserver](https://github.com/adafruit/Adafruit_CircuitPython_HTTPServer/) and [adafruit_minimqtt](https://github.com/adafruit/Adafruit_CircuitPython_MiniMQTT/) as libraries, they are provided (as copies for convenience, they might need updates at various times in the future) inside the "lib" folder and are all published under the MIT license.
 
-Both the system-configuration (everything that circuitpython manages, including network connectivity) and application-configuration (specific to this escpos-server code) is contained in settings.toml - but the application-specific logic is inside "tables" (as the TOML spec calls them, "sections" is a more common term known from INI-files). Because CircuitPython doesn't parse (and thus not expose as environment vars) tables/sections in settings.toml, this application uses [circuitpython_toml](https://github.com/elpekenin/circuitpython_toml/) to load the application-specific configurations from settings.toml (circuitpython itself just ignores them).
+Documentation for configuring the application is [in the Wiki](https://github.com/juergenpabel/circuitpython-escpos-server/wiki/Configuration).
 
 # Hardware
 
