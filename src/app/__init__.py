@@ -94,7 +94,7 @@ class Server:
                         else:
                             if service.setup(self.config[service_section], service2printers) is True:
                                 self.runtime['services'][service_name] = service
-                                print(f"        INFO: Assigned printers = [{','.join(service2printers.keys())}]")
+                                print(f"        INFO: Assigned printers = ['{'\',\''.join(service2printers.keys())}']")
                             else:
                                 print(f"        WARNING: Service{service_driver}.setup() failed for service '{service_name}', skipping service")
             print(f"    ...configuration for service '{service_name}' finished")
