@@ -1,8 +1,8 @@
 # Abstract
 
-A circuitpython application that receives ESC/POS requests via network (HTTP, MQTT &amp; RAW) and relays them to USB-connected thermal printer(s). The application waits via HTTP, MQTT and/or RAW-protocol for ESCPOS-formatted printjobs and sends them via USB to the configured thermal printer/s (without any parsing; but -optionally- with additional printer reset/initialization commands before the printjob and a paper-cut command after the printjob).
+A circuitpython application that receives ESC/POS requests via network (HTTP, MQTT &amp; TCP) and relays them to connected thermal printer(s). The application waits via HTTP, MQTT and/or TCP for ESCPOS-formatted printjobs and sends them to the configured thermal printer/s (without any parsing; but -optionally- with additional printer reset/initialization commands before the printjob and a paper-cut command after the printjob).
 
-**Note**: The original version of this software was published in my github repo "circuitpython-picow-escpos" - but since this is not in any way confined to the Pi Pico W, I re-published this software in this repository and continue its development here.
+**Note**: The original version of this software was published in my github repo "circuitpython-picow-escpos" - but since this is not in any way confined to the PicoW, I re-published this software in this repository and continue its development here.
 
 # Software
 
@@ -10,7 +10,7 @@ This circuitpython application uses [circuitpython_toml](https://github.com/elpe
 
 Documentation for configuring the application is [in the Wiki](https://github.com/juergenpabel/circuitpython-escpos-server/wiki/Configuration).
 
-**For USB-connected printers USB host-support in CircuitPython is required** (which for the Pi PicoW is CircuitPython 9 on master after 2024-02-15 - refer to commit [00824ad12229af15541d1431cf31f216e8e3587d](https://github.com/adafruit/circuitpython/commit/00824ad12229af15541d1431cf31f216e8e3587d)), which for the PicoW is NOT in CircuitPython 9.0.0-beta.0 but should be in 9.0.0-beta.1 (or whatever the next beta release will be called).
+**For USB-connected printers USB-host support in CircuitPython is required** (which for the PicoW is CircuitPython 9.0.0-beta.1 or newer).
 
 # Hardware
 
@@ -29,7 +29,8 @@ The PicoW is powered using 24VDC provided by the printer (an Epson TM-T20II) via
 
 - Which circuit python version for my &lt;board-name&gt;? Probably Circuitpython 8, it just needs [usb_host](https://docs.circuitpython.org/en/8.2.x/shared-bindings/usb_host/index.html) support (see the "Available on these boards" list) - the list is rather short, though.
 
-- Which circuit python version for PicoW? As of 2024-02-15: use a development build, take a look at their [S3 bucket for the PicoW](https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin/raspberry_pi_pico_w/).
+- Which circuitpython version for PicoW? As of 2024-02-26: [CircuitPython 9.0.0-beta.2](https://circuitpython.org/board/raspberry_pi_pico_w/) is the newest (but ...beta.1 will also work)
   
-- Why not provide the libs as MPYs for better performance and reduced memory consumption? Because CircuitPython 9 is still in beta and for the PicoW (my personal setup) it still needs the development builds, which are incompatible with the released MPYs of the other projects.
+- Why not provide the libs as MPYs for better performance and reduced memory consumption? Because CircuitPython 9 is still in beta and for the PicoW (my personal setup) it needs a BETA build, which are incompatible with the released MPYs of the other projects.
 
+- I am on a PicoW and use a configuration (settings.toml) much like you describe here but keep getting a `MemoryError` upon startup, what's going on? It's probably the adafruit_minimqtt implementation (together will all the other code) that causes this. What I did: get a copy of the circuitpython repository (`git clone https://github.com/adafruit/circuitpython.git`), than checkout the version that matches your deployed firmware version (`git checkout 9.0.0-beta.2` or whatever) and run the MPY compiler on each the .py files in the src/lib/adafruit_minimqtt directory (like `./mpy-cross/mpy-cross ~/Git/circuitpython-escpos-server/src/lib/adafruit_minimqtt/adafruit_minimqtt.py` and such). This should generate equally named .mpy files that can than be copied into lib/adafruit_minimqtt on your PicoW (delete the .py files). Because of the optimized nature (they are pre-compiled) of those files, circuitpython should now have enough memory to run the app. And if not, repeat with other .py files on the PicoW (until success).
