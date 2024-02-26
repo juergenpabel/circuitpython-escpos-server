@@ -6,7 +6,7 @@ A circuitpython application that receives ESC/POS requests via network (HTTP, MQ
 
 # Software
 
-This circuitpython application uses [circuitpython_toml](https://github.com/elpekenin/circuitpython_toml/), [adafruit_httpserver](https://github.com/adafruit/Adafruit_CircuitPython_HTTPServer/) and [adafruit_minimqtt](https://github.com/adafruit/Adafruit_CircuitPython_MiniMQTT/) as libraries, they are provided (as copies for convenience, they might need updates at various times in the future) inside the "lib" folder and are all published under the MIT license.
+This circuitpython application uses [circuitpython_toml](https://github.com/elpekenin/circuitpython_toml/), [adafruit_httpserver](https://github.com/adafruit/Adafruit_CircuitPython_HTTPServer/), [adafruit_logging](https://github.com/adafruit/Adafruit_CircuitPython_Logging), [adafruit_minimqtt](https://github.com/adafruit/Adafruit_CircuitPython_MiniMQTT/) and [circuitpython_usyslog](https://github.com/ageagainstthemachine/circuitpython-usyslog) as libraries, they are provided (as copies for convenience, they might need updates at various times in the future) inside the "lib" folder and are all published under the MIT license.
 
 Documentation for configuring the application is [in the Wiki](https://github.com/juergenpabel/circuitpython-escpos-server/wiki/Configuration).
 
