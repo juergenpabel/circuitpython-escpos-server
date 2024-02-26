@@ -1,11 +1,9 @@
-
 class Service:
-    debug: bool = False
 
-    def __init__(self, debug: bool):
-        self.debug = debug
+    def __init__(self, name: str):
+        self.name = name
 
-    def setup(self, config: toml.Dotty, printers: dict) -> bool:
+    def setup(self, config: dict, printers: dict) -> bool:
         self.printers = printers
         return True
 
