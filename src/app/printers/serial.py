@@ -14,11 +14,10 @@ class PrinterSerial(Printer):
     stopbits: int = 1
 
 
-    def __init__(self, debug: bool):
-        Printer.__init__(self, debug)
+    def __init__(self, name: str):
+        Printer.__init__(self, name)
 
-
-    def setup(self, config: toml.Dotty) -> bool:
+    def setup(self, config: dict) -> bool:
         Printer.setup(self, config)
         self.pin_tx = config.get('PIN_TX')
         if self.pin_tx not in board.__dict__:
@@ -49,16 +48,13 @@ class PrinterSerial(Printer):
             parity = busio.Parity.EVEN
         if self.parity == 'odd':
             parity = busio.Parity.ODD
-        if self.debug is True:
-            print(f"        DEBUG: instantiating busio.UART(tx=board.{self.pin_tx}, rx=board.{self.pin_rx}, baudrate={self.baud}, bits={self.bits}, parity=busio.Parity.{self.parity.upper()}, stop={self.stopbits})")
+        print(f"        DEBUG: instantiating busio.UART(tx=board.{self.pin_tx}, rx=board.{self.pin_rx}, baudrate={self.baud}, bits={self.bits}, parity=busio.Parity.{self.parity.upper()}, stop={self.stopbits})")
         self.uart = busio.UART(board.__dict__.get(self.pin_tx), board.__dict__.get(self.pin_rx),
                                baudrate=self.baud, bits=self.bits, parity=parity, stop=self.stopbits)
         return True
 
-
     def loop(self) -> bool:
         return True
-
 
     def write(self, data: bytearray) -> None:
         if self.uart is not None:
