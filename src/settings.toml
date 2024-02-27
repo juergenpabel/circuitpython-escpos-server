@@ -1,13 +1,12 @@
-#WIFI_SSID = "<WIFI-SSID>"     # use CIRCUITPY_WIFI_SSID for (always) enabled CPY web workflow
-#WIFI_PSK  = "<WIFI-PASS>"     # use CIRCUITPY_WIFI_PSK  for (always) enabled CPY web workflow
-
-DEBUG = 1
+#WIFI_SSID = "<WIFI-SSID>"     # use CIRCUITPY_WIFI_SSID      for (always) enabled CPY web workflow
+#WIFI_PSK  = "<WIFI-PASS>"     # use CIRCUITPY_WIFI_PASSWORD  for (always) enabled CPY web workflow
 
 [SYSTEM]
+LOG_LEVEL = "DEBUG"
+#LOG_SERVER = "192.168.1.1"
+#LOG_PRINTER = "TM-T20II"
 USB_HOST_PIN_DP = "GP26"       # required for USB printer(s), specific to board; GP26 is a PicoW specific pin name
 USB_HOST_PIN_DM = "GP27"       # required for USB printer(s), specific to board; GP27 is a PicoW specific pin name
-# TODO: NTP
-# TODO: option to enable web workflow in boot.py if resetted by software ...
 
 [ESCPOS]
 SERVICES = [ "RAW" ]               # services that shall be started
@@ -41,9 +40,13 @@ DRIVER="DEBUG"
 DRIVER = "USB"
 USB_VID = "04b8"                           # mandatory, 04b8 = EPSON
 USB_PID = "0e15"                           # mandatory, 0e15 = TM-T20II
+#ESCPOS-INIT = ""                          # default = "1b401b6404" => reset & feed 4 lines
+#ESCPOS-FINI = ""                          # default = "1b64081b6d" => feed 8 lines & partial cut
 
 [PRINTER:TM-T88IV]
 DRIVER = "USB"
 USB_VID = "04b8"                           # mandatory, 04b8 = EPSON
 USB_PID = "0202"                           # mandatory, 0202 = TM-T88IV
+#ESCPOS-INIT = ""                          # default = "1b401b6404" => reset & feed 4 lines
+#ESCPOS-FINI = ""                          # default = "1b64081b6d" => feed 8 lines & partial cut
 
