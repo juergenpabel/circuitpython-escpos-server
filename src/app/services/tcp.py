@@ -13,17 +13,19 @@ class ServiceTCP(Service):
 
     def setup(self, config: dict, printers: dict) -> bool:
         Service.setup(self, config, printers)
+        if 'SERVER_IPV4' not in config:
+            config['SERVER_IPV4'] = '0.0.0.0'
         if 'SERVER_PORT' not in config:
-            Log().getLogger(f"SERVICE:{self.name}").error("            Missing 'SERVER_PORT' config in table/secion 'SERVICE:TCP' in settings.toml, disabling service TCP")
-            return False
-
-        Log().getLogger(f"SERVICE:{self.name}").info(f"        Starting TCP server on IPv4='{config.get('SERVER_IPV4')}' and port '{config.get('SERVER_PORT')}'...")
+            config['SERVER_PORT'] = 9100
+        if 'CLIENT_TIMEOUT' not in config:
+            config['CLIENT_TIMEOUT'] = 3
+        Log().getLogger(f"SERVICE:{self.name}").info(f"        Starting TCP server on IPv4='{config['SERVER_IPV4']}' and port '{config['SERVER_PORT']}'...")
         pool = socketpool.SocketPool(wifi.radio)
         self.tcp_server = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
-        self.tcp_server.bind((config.get('SERVER_IPV4'), int(config.get('SERVER_PORT'))))
+        self.tcp_server.bind((config['SERVER_IPV4'], int(config['SERVER_PORT'])))
         self.tcp_server.listen(1)
         self.tcp_server.settimeout(0)
-        self.client_timeout = int(config.get('CLIENT_TIMEOUT'))
+        self.client_timeout = int(config['CLIENT_TIMEOUT'])
         Log().getLogger(f"SERVICE:{self.name}").info(f"        ...TCP server now started")
         return True
 

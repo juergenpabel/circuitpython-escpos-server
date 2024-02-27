@@ -14,13 +14,15 @@ class ServiceHTTP(Service):
 
     def setup(self, config: dict, printers: dict) -> bool:
         Service.setup(self, config, printers)
+        if 'SERVER_IPV4' not in config:
+            config['SERVER_IPV4'] = '0.0.0.0'
+        if 'SERVER_PORT' not in config:
+            config['SERVER_PORT'] = 8080
         if 'SERVER_PATH' not in config:
-            Log().getLogger(f"SERVICE:{self.name}").error("missing 'SERVER_PATH' config in table/secion 'SERVICE:HTTP' in settings.toml, disabling service HTTP")
-            return False
-        Log().getLogger(f"SERVICE:{self.name}").info(f"    Starting HTTP server on on IPv4='{config.get('SERVER_IPV4')}' and port={int(config.get('SERVER_PORT'))}...")
+            config['SERVER_PATH'] = '/'
         self.http_server = Server(socketpool.SocketPool(wifi.radio))
         self.http_server.add_routes([Route(config.get('SERVER_PATH'), POST, self._on_http_post_request)])
-        self.http_server.start(config.get('SERVER_IPV4'), int(config.get('SERVER_PORT')))
+        self.http_server.start(config['SERVER_IPV4'], int(config['SERVER_PORT']))
         Log().getLogger(f"SERVICE:{self.name}").info(f"    ...HTTP server started")
         return True
 

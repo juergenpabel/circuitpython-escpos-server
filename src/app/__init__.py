@@ -92,20 +92,12 @@ class Server(object):
                 service = None
                 service_driver = self.settings[service_section]['DRIVER'].upper()
                 if service_driver == 'HTTP':
-                    self.settings[service_section].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
-                    self.settings[service_section].setdefault('SERVER_PORT', 8080)
-                    self.settings[service_section].setdefault('SERVER_PATH', '/')
                     from .services.http import ServiceHTTP
                     service = ServiceHTTP(service_name)
                 elif service_driver == 'MQTT':
-                    self.settings[service_section].setdefault('BROKER_USER', None)
-                    self.settings[service_section].setdefault('BROKER_PASS', None)
                     from .services.mqtt import ServiceMQTT
                     service = ServiceMQTT(service_name)
                 elif service_driver == 'TCP':
-                    self.settings[service_section].setdefault('SERVER_IPV4', str(wifi.radio.ipv4_address))
-                    self.settings[service_section].setdefault('SERVER_PORT', 9100)
-                    self.settings[service_section].setdefault('CLIENT_TIMEOUT', 1)
                     from .services.tcp import ServiceTCP
                     service = ServiceTCP(service_name)
                 else:

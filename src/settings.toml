@@ -18,19 +18,22 @@ DRIVER = "HTTP"
 SERVER_IPV4 = "0.0.0.0"                    # default = "0.0.0.0"
 SERVER_PORT = 8080                         # default = 8080
 SERVER_PATH = "/escpos"                    # default = "/"
+#PRINTERS = [ "DEBUG" ]                    # default = all (active) printers
 
 [SERVICE:MQTT]
 DRIVER = "MQTT"
 BROKER_IPV4 = "192.168.4.1"                # mandatory
-#BROKER_USER = "YOUR-MQTT-USERNAME"        # optional, unless required by broker
-#BROKER_PASS = "YOUR-MQTT-PASSWORD"        # optional, unless required by broker
-BROKER_TOPIC = "printer/my-printer/escpos" # mandatory
+#BROKER_USER = "<MQTT-USERNAME>"           # optional, as required by broker
+#BROKER_PASS = "<MQTT-PASSWORD>"           # optional, as required by broker
+BROKER_TOPIC = "printer/TM-T20II/escpos"   # mandatory
+PRINTERS = [ "TM-T20II" ]                  # default = all (active) printers
 
 [SERVICE:RAW]
 DRIVER = "TCP"
 SERVER_IPV4 = "0.0.0.0"                    # default = "0.0.0.0"
 SERVER_PORT = 9100                         # default = 9100
 CLIENT_TIMEOUT = 3                         # default = 3
+PRINTERS = [ "DEBUG" ]                     # default = all (active) printers
 
 
 [PRINTER:DEBUG]
