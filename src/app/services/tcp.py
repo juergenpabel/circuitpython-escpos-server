@@ -11,7 +11,7 @@ class ServiceTCP(Service):
     def __init__(self, name: str):
         Service.__init__(self, name)
 
-    def setup(self, config: toml.Dotty, printers: dict) -> bool:
+    def setup(self, config: dict, printers: dict) -> bool:
         Service.setup(self, config, printers)
         if 'SERVER_PORT' not in config:
             Log().getLogger(f"SERVICE:{self.name}").error("            Missing 'SERVER_PORT' config in table/secion 'SERVICE:TCP' in settings.toml, disabling service TCP")
