@@ -64,9 +64,9 @@ class Server(object):
                     if usb_host_pin_dp is not None and usb_host_pin_dm is not None:
                         printer = PrinterUSB(printer_name, usb_host_pin_dp, usb_host_pin_dm)
                     else:
-                        self.logger.error(f"        Missing USB pin definition in table/section SYSTEM (USB_HOST_PIN_DP & USB_HOST_PIN_DM), skipping printer '{printer_name}'")
+                        self.logger.error(f"        Missing settings 'USB_HOST_PIN_DP' and/or 'USB_HOST_PIN_DM' in table/section SYSTEM, skipping printer '{printer_name}'")
                 else:
-                    self.logger.error(f"        DRIVER='{printer_driver}' is invalid in configuration table/section 'PRINTER:{printer_name}' (in settings.toml), skipping printer")
+                    self.logger.error(f"        DRIVER='{printer_driver}' is invalid in table/section 'PRINTER:{printer_name}' (in settings.toml), skipping printer")
                 if printer is not None:
                     if printer.setup(self.settings[printer_section]) is True:
                         printers[printer_name] = printer
@@ -85,9 +85,9 @@ class Server(object):
             self.logger.info(f"    Configuring service '{service_name}'...")
             service_section = f"SERVICE:{service_name}"
             if service_section not in self.settings:
-                self.logger.error(f"        Configuration table/section 'SERVICE:{service_name}' (in settings.toml) not found, skipping service")
+                self.logger.error(f"        Missing table/section 'SERVICE:{service_name}' (in settings.toml), skipping service")
             if 'DRIVER' not in self.settings[service_section]:
-                self.logger.error(f"        Missing 'DRIVER' config in table/section 'SERVICE:{service_name}' (in settings.toml), skipping service")
+                self.logger.error(f"        Missing 'DRIVER' setting in table/section 'SERVICE:{service_name}' (in settings.toml), skipping service")
             if service_section in self.settings and 'DRIVER' in self.settings[service_section]:
                 service = None
                 service_driver = self.settings[service_section]['DRIVER'].upper()
@@ -101,7 +101,7 @@ class Server(object):
                     from .services.tcp import ServiceTCP
                     service = ServiceTCP(service_name)
                 else:
-                    self.logger.error(f"        DRIVER='{service_driver}' is invalid in configuration table/section 'SERVICE:{service_name}' (in settings.toml), skipping service")
+                    self.logger.error(f"        DRIVER='{service_driver}' is invalid in table/section 'SERVICE:{service_name}' (in settings.toml), skipping service")
                 if service is not None:
                     self.settings[service_section].setdefault('PRINTERS', self.runtime['printers'].keys())
                     service2printers = {}

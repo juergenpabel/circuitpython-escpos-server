@@ -25,7 +25,7 @@ class Log(object):
         if 'LOG_LEVEL' in self.app_settings['SYSTEM']:
             level_str = self.app_settings['SYSTEM']['LOG_LEVEL']
             self.root_logger.setLevel(self.getLevelNo(level_str))
-            self.root_logger.info(f"Using LOG_LEVEL='{level_str.upper()}' from table/section SYSTEM (settings.toml) for Logger('root')")
+            self.root_logger.info(f"LOG_LEVEL='{level_str.upper()}' for Logger('root')")
         if 'LOG_SERVER' in self.app_settings['SYSTEM']:
             self.root_logger.addHandler(SyslogHandler(self.app_settings['SYSTEM']['LOG_SERVER']))
             self.root_logger.info(f"Added SyslogHandler('{self.app_settings['SYSTEM']['LOG_SERVER']}') to Logger('root')")

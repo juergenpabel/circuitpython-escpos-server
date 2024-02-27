@@ -15,14 +15,14 @@ class ServiceMQTT(Service):
     def setup(self, config: dict, printers: dict) -> bool:
         Service.setup(self, config, printers)
         if 'BROKER_IPV4' not in config:
-            Log().getLogger(f"SERVICE:{self.name}").error("missing 'BROKER_IPV4' setting in table/secion 'SERVICE:{self.name}' in settings.toml, disabling service")
+            Log().getLogger(f"SERVICE:{self.name}").error("missing 'BROKER_IPV4' setting in table/secion 'SERVICE:{self.name}' (in settings.toml), disabling service")
             return False
         if 'BROKER_USER' not in config:
             config['BROKER_USER'] = None
         if 'BROKER_PASS' not in config:
             config['BROKER_PASS'] = None
         if 'BROKER_TOPIC' not in config:
-            Log().getLogger(f"SERVICE:{self.name}").error("missing 'BROKER_TOPIC' setting in table/secion 'SERVICE:{self.name}' in settings.toml, disabling service")
+            Log().getLogger(f"SERVICE:{self.name}").error("missing 'BROKER_TOPIC' setting in table/secion 'SERVICE:{self.name}' (in settings.toml), disabling service")
             return False
         Log().getLogger(f"SERVICE:{self.name}").info(f"    Connecting to MQTT broker '{config['BROKER_IPV4']}'...")
         self.mqtt_client = MQTTClient(broker=config['BROKER_IPV4'],
