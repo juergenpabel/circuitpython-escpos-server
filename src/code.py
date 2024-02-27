@@ -48,7 +48,9 @@ try:
                         if wifi.radio.ping(ipv4_gateway) is not None:
                             server.getLogger().debug(f"    WIFI health check OK (ping {ipv4_gateway})")
                         else:
-                            server.getLogger().warning(f"    WIFI connected but IPv4 gateway not reachable (ping {ipv4_gateway})")
+                            server.getLogger().warning(f"    WIFI connected but IPv4 gateway not reachable (ping {ipv4_gateway}), waiting for {int(wifi_offline_grace_secs)}"
+                                                        "seconds (WIFI_OFFLINE_GRACE_PERIOD) to come back online")
+                            wifi_offline_timestamp = time.monotonic()
             else:
                 server.getLogger().error(f"    WIFI disconnected, waiting for {int(wifi_offline_grace_secs)} seconds (WIFI_OFFLINE_GRACE_PERIOD) to come back online")
                 wifi_offline_timestamp = time.monotonic()
